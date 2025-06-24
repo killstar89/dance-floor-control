@@ -1,9 +1,10 @@
+<!-- control.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dance Floor Control Panel</title>
+  <title>Dance Floor Control</title>
   <style>
     body {
       background: #111;
@@ -11,11 +12,9 @@
       font-family: sans-serif;
       padding: 2rem;
     }
-
     h1 {
       text-align: center;
     }
-
     .controls {
       display: flex;
       flex-direction: column;
@@ -23,7 +22,6 @@
       max-width: 300px;
       margin: auto;
     }
-
     button, select {
       padding: 0.7rem;
       font-size: 1rem;
@@ -33,7 +31,6 @@
       color: white;
       cursor: pointer;
     }
-
     button:hover, select:hover {
       background: #666;
     }
@@ -47,7 +44,7 @@
 
     <label>
       Color Theme:
-      <select onchange="updateAndSendCommand('color', this.value)">
+      <select name="color" onchange="updateAndSendCommand('color', this.value)">
         <option value="blue">Blue</option>
         <option value="purple">Purple</option>
         <option value="red">Red</option>
@@ -57,10 +54,14 @@
 
     <label>
       Pattern:
-      <select onchange="updateAndSendCommand('pattern', this.value)">
+      <select name="pattern" onchange="updateAndSendCommand('pattern', this.value)">
         <option value="spiral">Spiral</option>
         <option value="wave">Wave</option>
         <option value="center-out">Center-Out</option>
+        <option value="random">Random</option>
+        <option value="top-to-bottom">Top to Bottom</option>
+        <option value="left-to-right">Left to Right</option>
+        <option value="checkerboard">Checkerboard</option>
       </select>
     </label>
   </div>
@@ -68,24 +69,18 @@
   <script>
     const channel = new BroadcastChannel("dancefloor-control");
 
-    // Onload, load the saved settings from localStorage and apply to the controls
     window.onload = () => {
-      const savedColor = localStorage.getItem('color') || 'blue';
-      const savedPattern = localStorage.getItem('pattern') || 'spiral';
-
-      document.querySelector('select[name="color"]').value = savedColor;
-      document.querySelector('select[name="pattern"]').value = savedPattern;
+      document.querySelector('select[name="color"]').value = localStorage.getItem('color') || 'blue';
+      document.querySelector('select[name="pattern"]').value = localStorage.getItem('pattern') || 'spiral';
     };
 
     function sendCommand(type, value = null) {
       channel.postMessage({ type, value });
-      console.log("Sent command:", type, value);
     }
 
-    // Save settings in localStorage and send to BroadcastChannel
     function updateAndSendCommand(type, value) {
-      localStorage.setItem(type, value);  // Save setting to localStorage
-      sendCommand(type, value);          // Send setting to BroadcastChannel
+      localStorage.setItem(type, value);
+      sendCommand(type, value);
     }
   </script>
 </body>
