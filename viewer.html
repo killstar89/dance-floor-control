@@ -43,9 +43,10 @@
       rainbow: ['#ff0000', '#ffa500', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#ee82ee']
     };
 
-    let activeColor = 'blue';
-    let activePattern = 'spiral';
-    let power = true;
+    let activeColor = localStorage.getItem('df_color') || 'blue';
+    let activePattern = localStorage.getItem('df_pattern') || 'spiral';
+    let power = localStorage.getItem('df_power') === 'false' ? false : true;
+
     let cols, rows;
     let boxes = [];
 
@@ -77,10 +78,9 @@
       const midRow = rows / 2;
       const midCol = cols / 2;
 
-      boxes.forEach(({ element, row, col }, i) => {
+      boxes.forEach(({ element, row, col }) => {
         const delay = getPatternDelay(row, col, midRow, midCol);
         const color = colorList[Math.floor(Math.random() * colorList.length)];
-
         setTimeout(() => {
           element.style.backgroundColor = power ? color : '#000';
         }, delay);
@@ -122,10 +122,27 @@
 
     channel.onmessage = ({ data }) => {
       const { type, value } = data;
-      if (type === 'color') activeColor = value;
-      if (type === 'pattern') activePattern = value;
-      if (type === 'start') power = true;
-      if (type === 'stop') power = false;
+
+      if (type === 'color') {
+        activeColor = value;
+        localStorage.setItem('df_color', value);
+      }
+
+      if (type === 'pattern') {
+        activePattern = value;
+        localStorage.setItem('df_pattern', value);
+      }
+
+      if (type === 'start') {
+        power = true;
+        localStorage.setItem('df_power', 'true');
+      }
+
+      if (type === 'stop') {
+        power = false;
+        localStorage.setItem('df_power', 'false');
+      }
+
       applyColors();
     };
 
