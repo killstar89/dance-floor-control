@@ -1,134 +1,61 @@
+<!-- control.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dance Floor Control</title>
   <style>
-    body {
-      background-color: #111;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-    }
-
-    h1 {
-      margin-bottom: 2rem;
-    }
-
-    .control-group {
-      margin-bottom: 1rem;
-      width: 100%;
-      max-width: 300px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-
-    select, input[type="checkbox"] {
-      width: 100%;
-      padding: 0.5rem;
-      font-size: 1rem;
-      border-radius: 6px;
-      border: none;
-      background: #333;
-      color: #fff;
-    }
-
-    .toggle-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .toggle-container input {
-      width: auto;
-    }
+    body { font-family: sans-serif; background: #111; color: white; padding: 1em; }
+    select, button, label { margin: 0.5em 0; display: block; }
   </style>
 </head>
 <body>
-  <h1>Dance Floor Control</h1>
+  <h2>Dance Floor Control</h2>
 
-  <div class="control-group toggle-container">
-    <label for="powerToggle">Dance Floor Power</label>
-    <input type="checkbox" id="powerToggle">
-  </div>
+  <label>Pattern:
+    <select id="patternSelect">
+      <option value="spiral">Spiral</option>
+      <option value="wave">Wave</option>
+      <option value="grid">Grid</option>
+      <option value="random">Random</option>
+    </select>
+  </label>
 
-  <div class="control-group">
-    <label for="colorSelect">Color Theme</label>
+  <label>Color:
     <select id="colorSelect">
       <option value="blue">Blue</option>
       <option value="purple">Purple</option>
       <option value="red">Red</option>
       <option value="green">Green</option>
-      <option value="pink">Pink</option>
-      <option value="orange">Orange</option>
-      <option value="cyan">Cyan</option>
       <option value="rainbow">Rainbow</option>
     </select>
-  </div>
+  </label>
 
-  <div class="control-group">
-    <label for="patternSelect">Animation Pattern</label>
-    <select id="patternSelect">
-      <option value="spiral">Spiral</option>
-      <option value="wave">Wave</option>
-      <option value="center-out">Center-Out</option>
-      <option value="top-to-bottom">Top to Bottom</option>
-      <option value="left-to-right">Left to Right</option>
-      <option value="checkerboard">Checkerboard</option>
-      <option value="random">Random</option>
-      <option value="flash">Flash</option>
-      <option value="diagonal">Diagonal</option>
-    </select>
-  </div>
+  <label>
+    <input type="checkbox" id="powerToggle" checked /> Power On/Off
+  </label>
 
   <script>
-    const channel = new BroadcastChannel("dancefloor-control");
+    const patternSelect = document.getElementById("patternSelect");
+    const colorSelect = document.getElementById("colorSelect");
+    const powerToggle = document.getElementById("powerToggle");
 
-    function setAndSend(type, value) {
-      localStorage.setItem(type, value);
-      channel.postMessage({ type, value });
+    function saveSettings() {
+      localStorage.setItem("dancePattern", patternSelect.value);
+      localStorage.setItem("danceColor", colorSelect.value);
+      localStorage.setItem("dancePower", powerToggle.checked ? "on" : "off");
     }
 
-    function togglePower(isOn) {
-      localStorage.setItem("power", isOn);
-      channel.postMessage({ type: isOn ? "start" : "stop" });
-    }
+    patternSelect.addEventListener("change", saveSettings);
+    colorSelect.addEventListener("change", saveSettings);
+    powerToggle.addEventListener("change", saveSettings);
 
     window.onload = () => {
-      const savedColor = localStorage.getItem("color") || "blue";
-      const savedPattern = localStorage.getItem("pattern") || "spiral";
-      const savedPower = localStorage.getItem("power") === "true";
-
-      document.getElementById("colorSelect").value = savedColor;
-      document.getElementById("patternSelect").value = savedPattern;
-      document.getElementById("powerToggle").checked = savedPower;
-
-      if (savedPower) {
-        channel.postMessage({ type: "color", value: savedColor });
-        channel.postMessage({ type: "pattern", value: savedPattern });
-        channel.postMessage({ type: "start" });
-      }
+      patternSelect.value = localStorage.getItem("dancePattern") || "spiral";
+      colorSelect.value = localStorage.getItem("danceColor") || "blue";
+      powerToggle.checked = localStorage.getItem("dancePower") !== "off";
     };
-
-    document.getElementById("colorSelect").addEventListener("change", (e) => {
-      setAndSend("color", e.target.value);
-    });
-
-    document.getElementById("patternSelect").addEventListener("change", (e) => {
-      setAndSend("pattern", e.target.value);
-    });
-
-    document.getElementById("powerToggle").addEventListener("change", (e) => {
-      togglePower(e.target.checked);
-    });
   </script>
 </body>
 </html>
