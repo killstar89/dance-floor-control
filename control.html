@@ -22,7 +22,7 @@
       max-width: 300px;
       margin: auto;
     }
-    button, select {
+    button, select, input[type="checkbox"] {
       padding: 0.7rem;
       font-size: 1rem;
       border: none;
@@ -30,6 +30,11 @@
       background: #444;
       color: white;
       cursor: pointer;
+    }
+    label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     button:hover, select:hover {
       background: #666;
@@ -39,29 +44,37 @@
 <body>
   <h1>Dance Floor Control</h1>
   <div class="controls">
-    <button onclick="sendCommand('start')">Start</button>
-    <button onclick="sendCommand('stop')">Stop</button>
+    <label>
+      Dance Floor:
+      <input type="checkbox" id="powerToggle" onchange="togglePower(this.checked)">
+    </label>
 
     <label>
       Color Theme:
-      <select name="color" onchange="updateAndSendCommand('color', this.value)">
+      <select id="colorSelect" onchange="setAndSend('color', this.value)">
         <option value="blue">Blue</option>
         <option value="purple">Purple</option>
         <option value="red">Red</option>
         <option value="green">Green</option>
+        <option value="pink">Pink</option>
+        <option value="orange">Orange</option>
+        <option value="cyan">Cyan</option>
+        <option value="rainbow">Rainbow</option>
       </select>
     </label>
 
     <label>
       Pattern:
-      <select name="pattern" onchange="updateAndSendCommand('pattern', this.value)">
+      <select id="patternSelect" onchange="setAndSend('pattern', this.value)">
         <option value="spiral">Spiral</option>
         <option value="wave">Wave</option>
         <option value="center-out">Center-Out</option>
-        <option value="random">Random</option>
         <option value="top-to-bottom">Top to Bottom</option>
         <option value="left-to-right">Left to Right</option>
         <option value="checkerboard">Checkerboard</option>
+        <option value="random">Random</option>
+        <option value="flash">Flash</option>
+        <option value="diagonal">Diagonal</option>
       </select>
     </label>
   </div>
@@ -69,19 +82,32 @@
   <script>
     const channel = new BroadcastChannel("dancefloor-control");
 
-    window.onload = () => {
-      document.querySelector('select[name="color"]').value = localStorage.getItem('color') || 'blue';
-      document.querySelector('select[name="pattern"]').value = localStorage.getItem('pattern') || 'spiral';
-    };
-
-    function sendCommand(type, value = null) {
+    function setAndSend(type, value) {
+      localStorage.setItem(type, value);
       channel.postMessage({ type, value });
     }
 
-    function updateAndSendCommand(type, value) {
-      localStorage.setItem(type, value);
-      sendCommand(type, value);
+    function togglePower(isOn) {
+      localStorage.setItem('power', isOn);
+      channel.postMessage({ type: isOn ? "start" : "stop" });
     }
+
+    window.onload = () => {
+      const color = localStorage.getItem("color") || "blue";
+      const pattern = localStorage.getItem("pattern") || "spiral";
+      const power = localStorage.getItem("power") === "true";
+
+      document.getElementById("colorSelect").value = color;
+      document.getElementById("patternSelect").value = pattern;
+      document.getElementById("powerToggle").checked = power;
+
+      // Send settings on load
+      if (power) {
+        channel.postMessage({ type: "color", value: color });
+        channel.postMessage({ type: "pattern", value: pattern });
+        channel.postMessage({ type: "start" });
+      }
+    };
   </script>
 </body>
 </html>
