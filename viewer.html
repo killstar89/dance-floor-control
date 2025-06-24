@@ -55,8 +55,8 @@
       green: ['#006400', '#00FF00', '#228B22']
     };
 
-    let colorTheme = localStorage.getItem('color') || 'blue'; // Load from localStorage
-    let animationRunning = true;
+    let colorTheme = localStorage.getItem('color') || 'blue';  // Load color theme from localStorage
+    let pattern = localStorage.getItem('pattern') || 'spiral';  // Load pattern from localStorage
 
     const channel = new BroadcastChannel("dancefloor-control");
 
@@ -114,25 +114,25 @@
     }
 
     function startAnimation() {
-      animationRunning = true;
       createGrid();
       setInterval(changeColors, 4000);
     }
 
     function stopAnimation() {
-      animationRunning = false;
       clearInterval(changeColors);
     }
 
     function updateColorTheme(theme) {
       colorTheme = theme;
-      localStorage.setItem('color', theme); // Save color theme to localStorage
-      createGrid(); // Refresh grid with new colors
+      localStorage.setItem('color', theme);  // Save to localStorage
+      createGrid();  // Refresh grid with new colors
     }
 
-    function switchPattern(pattern) {
-      console.log("Switching pattern:", pattern);
-      // Implement pattern switching logic here
+    function switchPattern(newPattern) {
+      pattern = newPattern;
+      localStorage.setItem('pattern', newPattern);  // Save pattern to localStorage
+      console.log("Pattern switched to:", pattern);
+      // You can implement logic to switch animation patterns here
     }
 
     window.onload = createGrid;
