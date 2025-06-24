@@ -58,34 +58,37 @@
       grid.innerHTML = "";
     }
 
+    let lastPattern = "";
+    let lastColor = "";
+    let lastPower = "";
+
     function updateDisplay() {
       const pattern = localStorage.getItem("dancePattern") || "spiral";
       const color = localStorage.getItem("danceColor") || "blue";
       const power = localStorage.getItem("dancePower") || "on";
 
-      if (power === "off") {
-        turnOffGrid();
-        return;
-      }
+      if (pattern !== lastPattern || color !== lastColor || power !== lastPower) {
+        lastPattern = pattern;
+        lastColor = color;
+        lastPower = power;
 
-      const cols = Math.floor(window.innerWidth / boxSize);
-      const rows = Math.floor(window.innerHeight / boxSize);
+        if (power === "off") {
+          turnOffGrid();
+          return;
+        }
 
-      if (pattern === "spiral") {
-        createGrid(rows, cols, color);
-        // Spiral logic can be improved
-      } else if (pattern === "wave") {
-        createGrid(rows, cols, color);
-      } else if (pattern === "grid") {
-        createGrid(rows, cols, color);
-      } else if (pattern === "random") {
-        createGrid(rows, cols, color);
+        const cols = Math.floor(window.innerWidth / boxSize);
+        const rows = Math.floor(window.innerHeight / boxSize);
+
+        if (pattern === "spiral" || pattern === "wave" || pattern === "grid" || pattern === "random") {
+          createGrid(rows, cols, color);
+        }
       }
     }
 
     window.onload = () => {
       updateDisplay();
-      setInterval(updateDisplay, 3000);
+      setInterval(updateDisplay, 1000);
     };
 
     window.addEventListener("resize", updateDisplay);
