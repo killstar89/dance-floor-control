@@ -1,3 +1,4 @@
+<!-- viewer.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,18 +30,9 @@
     }
 
     @keyframes breathe {
-      0% {
-        transform: scale(1);
-        filter: brightness(1);
-      }
-      50% {
-        transform: scale(1.05);
-        filter: brightness(1.2);
-      }
-      100% {
-        transform: scale(1);
-        filter: brightness(1);
-      }
+      0% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.05); filter: brightness(1.2); }
+      100% { transform: scale(1); filter: brightness(1); }
     }
   </style>
 </head>
@@ -55,14 +47,13 @@
       green: ['#006400', '#00FF00', '#228B22']
     };
 
-    let colorTheme = localStorage.getItem('color') || 'blue';  // Load color theme from localStorage
-    let pattern = localStorage.getItem('pattern') || 'spiral';  // Load pattern from localStorage
+    let colorTheme = localStorage.getItem('color') || 'blue';
+    let pattern = localStorage.getItem('pattern') || 'spiral';
 
     const channel = new BroadcastChannel("dancefloor-control");
 
     channel.onmessage = (event) => {
       const { type, value } = event.data;
-      console.log("Received command:", type, value);
 
       switch (type) {
         case "start":
@@ -85,9 +76,11 @@
       return colorsArray[Math.floor(Math.random() * colorsArray.length)];
     }
 
+    let animationInterval;
+
     function createGrid() {
       const grid = document.getElementById('grid');
-      grid.innerHTML = ''; // Clear previous grid
+      grid.innerHTML = '';
 
       const boxSize = 50;
       const cols = Math.floor(window.innerWidth / boxSize);
@@ -101,7 +94,34 @@
           const box = document.createElement('div');
           box.className = 'colorBox';
           box.style.backgroundColor = getRandomColor();
-          box.style.animationDelay = `${row * 1.2}s`;
+
+          let delay = 0;
+          switch (pattern) {
+            case 'spiral':
+              delay = Math.abs(col - cols / 2) + Math.abs(row - rows / 2);
+              break;
+            case 'wave':
+              delay = Math.sin(row / 2) * 2;
+              break;
+            case 'center-out':
+              delay = Math.sqrt((col - cols / 2) ** 2 + (row - rows / 2) ** 2) * 0.1;
+              break;
+            case 'top-to-bottom':
+              delay = row * 0.3;
+              break;
+            case 'left-to-right':
+              delay = col * 0.3;
+              break;
+            case 'checkerboard':
+              delay = (row + col) % 2 === 0 ? 0 : 0.5;
+              break;
+            case 'random':
+            default:
+              delay = Math.random() * 2;
+              break;
+          }
+
+          box.style.animationDelay = `${delay}s`;
           grid.appendChild(box);
         }
       }
@@ -115,27 +135,30 @@
 
     function startAnimation() {
       createGrid();
-      setInterval(changeColors, 4000);
+      if (animationInterval) clearInterval(animationInterval);
+      animationInterval = setInterval(changeColors, 4000);
     }
 
     function stopAnimation() {
-      clearInterval(changeColors);
+      clearInterval(animationInterval);
     }
 
     function updateColorTheme(theme) {
       colorTheme = theme;
-      localStorage.setItem('color', theme);  // Save to localStorage
-      createGrid();  // Refresh grid with new colors
+      localStorage.setItem('color', theme);
+      createGrid();
     }
 
     function switchPattern(newPattern) {
       pattern = newPattern;
-      localStorage.setItem('pattern', newPattern);  // Save pattern to localStorage
-      console.log("Pattern switched to:", pattern);
-      // You can implement logic to switch animation patterns here
+      localStorage.setItem('pattern', newPattern);
+      createGrid();
     }
 
-    window.onload = createGrid;
+    window.onload = () => {
+      createGrid();
+      startAnimation();
+    };
     window.addEventListener('resize', createGrid);
   </script>
 </body>
