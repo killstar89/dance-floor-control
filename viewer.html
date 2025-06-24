@@ -23,7 +23,6 @@
     .colorBox {
       width: 100%;
       height: 100%;
-      background-color: #800080;
       border: 1px solid black;
       animation: breathe 6s ease-in-out infinite;
       transition: background-color 3s;
@@ -40,82 +39,79 @@
   <div id="grid"></div>
 
   <script>
-    const colors = {
+    const colorThemes = {
       blue: ['#0074D9', '#001F3F', '#0050A0', '#003366'],
       purple: ['#800080', '#9202ab', '#360140'],
       red: ['#8B0000', '#FF0000', '#AA0000'],
-      green: ['#006400', '#00FF00', '#228B22']
+      green: ['#006400', '#00FF00', '#228B22'],
+      pink: ['#FF69B4', '#FFC0CB', '#FF1493'],
+      orange: ['#FF8C00', '#FFA500', '#FFD700'],
+      cyan: ['#00FFFF', '#00CED1', '#008B8B'],
+      rainbow: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3']
     };
 
-    let colorTheme = localStorage.getItem('color') || 'blue';
-    let pattern = localStorage.getItem('pattern') || 'spiral';
+    let colorTheme = localStorage.getItem("color") || "blue";
+    let pattern = localStorage.getItem("pattern") || "spiral";
+    let isRunning = localStorage.getItem("power") === "true";
 
     const channel = new BroadcastChannel("dancefloor-control");
 
-    channel.onmessage = (event) => {
-      const { type, value } = event.data;
-
-      switch (type) {
-        case "start":
-          startAnimation();
-          break;
-        case "stop":
-          stopAnimation();
-          break;
-        case "color":
-          updateColorTheme(value);
-          break;
-        case "pattern":
-          switchPattern(value);
-          break;
-      }
+    channel.onmessage = ({ data }) => {
+      const { type, value } = data;
+      if (type === "color") updateColorTheme(value);
+      else if (type === "pattern") updatePattern(value);
+      else if (type === "start") startAnimation();
+      else if (type === "stop") stopAnimation();
     };
 
     function getRandomColor() {
-      const colorsArray = colors[colorTheme] || colors.blue;
-      return colorsArray[Math.floor(Math.random() * colorsArray.length)];
+      const list = colorThemes[colorTheme] || colorThemes.blue;
+      return list[Math.floor(Math.random() * list.length)];
     }
 
-    let animationInterval;
-
     function createGrid() {
-      const grid = document.getElementById('grid');
-      grid.innerHTML = '';
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
 
       const boxSize = 50;
       const cols = Math.floor(window.innerWidth / boxSize);
       const rows = Math.floor(window.innerHeight / boxSize);
-
       grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-          const box = document.createElement('div');
-          box.className = 'colorBox';
+          const box = document.createElement("div");
+          box.className = "colorBox";
           box.style.backgroundColor = getRandomColor();
 
           let delay = 0;
           switch (pattern) {
-            case 'spiral':
+            case "spiral":
               delay = Math.abs(col - cols / 2) + Math.abs(row - rows / 2);
               break;
-            case 'wave':
+            case "wave":
               delay = Math.sin(row / 2) * 2;
               break;
-            case 'center-out':
+            case "center-out":
               delay = Math.sqrt((col - cols / 2) ** 2 + (row - rows / 2) ** 2) * 0.1;
               break;
-            case 'top-to-bottom':
+            case "top-to-bottom":
               delay = row * 0.3;
               break;
-            case 'left-to-right':
+            case "left-to-right":
               delay = col * 0.3;
               break;
-            case 'checkerboard':
+            case "checkerboard":
               delay = (row + col) % 2 === 0 ? 0 : 0.5;
               break;
-            case 'random':
+            case "diagonal":
+              delay = (row + col) * 0.15;
+              break;
+            case "flash":
+              delay = (row * col) % 3 * 0.2;
+              break;
+            case "random":
             default:
               delay = Math.random() * 2;
               break;
@@ -128,38 +124,45 @@
     }
 
     function changeColors() {
-      document.querySelectorAll('.colorBox').forEach(box => {
+      document.querySelectorAll(".colorBox").forEach((box) => {
         box.style.backgroundColor = getRandomColor();
       });
     }
 
+    let animationInterval;
     function startAnimation() {
+      isRunning = true;
+      localStorage.setItem("power", "true");
       createGrid();
-      if (animationInterval) clearInterval(animationInterval);
+      clearInterval(animationInterval);
       animationInterval = setInterval(changeColors, 4000);
     }
 
     function stopAnimation() {
+      isRunning = false;
+      localStorage.setItem("power", "false");
       clearInterval(animationInterval);
     }
 
     function updateColorTheme(theme) {
       colorTheme = theme;
-      localStorage.setItem('color', theme);
-      createGrid();
+      localStorage.setItem("color", theme);
+      if (isRunning) createGrid();
     }
 
-    function switchPattern(newPattern) {
-      pattern = newPattern;
-      localStorage.setItem('pattern', newPattern);
-      createGrid();
+    function updatePattern(p) {
+      pattern = p;
+      localStorage.setItem("pattern", p);
+      if (isRunning) createGrid();
     }
 
     window.onload = () => {
-      createGrid();
-      startAnimation();
+      if (isRunning) startAnimation();
     };
-    window.addEventListener('resize', createGrid);
+
+    window.addEventListener("resize", () => {
+      if (isRunning) createGrid();
+    });
   </script>
 </body>
 </html>
