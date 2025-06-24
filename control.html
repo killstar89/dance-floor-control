@@ -68,7 +68,7 @@
   <script>
     const channel = new BroadcastChannel("dancefloor-control");
 
-    // Onload, load the saved settings from localStorage
+    // Onload, load the saved settings from localStorage and apply to the controls
     window.onload = () => {
       const savedColor = localStorage.getItem('color') || 'blue';
       const savedPattern = localStorage.getItem('pattern') || 'spiral';
@@ -84,8 +84,8 @@
 
     // Save settings in localStorage and send to BroadcastChannel
     function updateAndSendCommand(type, value) {
-      localStorage.setItem(type, value);
-      sendCommand(type, value);
+      localStorage.setItem(type, value);  // Save setting to localStorage
+      sendCommand(type, value);          // Send setting to BroadcastChannel
     }
   </script>
 </body>
