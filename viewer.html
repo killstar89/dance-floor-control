@@ -55,7 +55,7 @@
       green: ['#006400', '#00FF00', '#228B22']
     };
 
-    let colorTheme = "blue"; // default theme
+    let colorTheme = localStorage.getItem('color') || 'blue'; // Load from localStorage
     let animationRunning = true;
 
     const channel = new BroadcastChannel("dancefloor-control");
@@ -126,6 +126,7 @@
 
     function updateColorTheme(theme) {
       colorTheme = theme;
+      localStorage.setItem('color', theme); // Save color theme to localStorage
       createGrid(); // Refresh grid with new colors
     }
 
