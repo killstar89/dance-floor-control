@@ -1,29 +1,22 @@
+<!-- viewer.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dance Floor Viewer</title>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background-color: #000;
-      overflow: hidden;
-    }
-
-    #grid {
-      display: grid;
-      width: 100vw;
-      height: 100vh;
-    }
-
+    html, body { margin: 0; padding: 0; height: 100%; background: black; overflow: hidden; }
+    #grid { display: grid; width: 100vw; height: 100vh; }
     .box {
       width: 100%;
       height: 100%;
       border: 1px solid #111;
-      transition: background-color 0.5s ease, transform 0.5s ease;
+      animation: pulse 4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.1); filter: brightness(1.5); }
     }
   </style>
 </head>
@@ -31,131 +24,71 @@
   <div id="grid"></div>
 
   <script>
-    const grid = document.getElementById('grid');
-    const colors = {
-      blue: ['#0044ff', '#0033cc'],
-      purple: ['#800080', '#4b0082'],
-      red: ['#ff0000', '#990000'],
-      green: ['#00ff00', '#008000'],
-      pink: ['#ff69b4', '#ff1493'],
-      orange: ['#ffa500', '#ff4500'],
-      cyan: ['#00ffff', '#00ced1'],
-      rainbow: ['#ff0000', '#ffa500', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#ee82ee']
-    };
+    const grid = document.getElementById("grid");
+    const boxSize = 50;
 
-    let activeColor = localStorage.getItem('df_color') || 'blue';
-    let activePattern = localStorage.getItem('df_pattern') || 'spiral';
-    let power = localStorage.getItem('df_power') === 'false' ? false : true;
-
-    let cols, rows;
-    let boxes = [];
-
-    const channel = new BroadcastChannel('dancefloor-control');
-
-    function createGrid() {
-      grid.innerHTML = '';
-      boxes = [];
-
-      const boxSize = 50;
-      cols = Math.floor(window.innerWidth / boxSize);
-      rows = Math.floor(window.innerHeight / boxSize);
-
+    function createGrid(rows, cols, color) {
+      grid.innerHTML = "";
       grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
       grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          const box = document.createElement('div');
-          box.className = 'box';
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const box = document.createElement("div");
+          box.className = "box";
+          box.style.backgroundColor = getColor(color);
           grid.appendChild(box);
-          boxes.push({ element: box, row, col });
         }
       }
     }
 
-    function applyColors() {
-      const colorList = colors[activeColor] || ['#000'];
-      const midRow = rows / 2;
-      const midCol = cols / 2;
-
-      boxes.forEach(({ element, row, col }) => {
-        const delay = getPatternDelay(row, col, midRow, midCol);
-        const color = colorList[Math.floor(Math.random() * colorList.length)];
-        setTimeout(() => {
-          element.style.backgroundColor = power ? color : '#000';
-        }, delay);
-      });
+    function getColor(theme) {
+      const options = {
+        blue: ["#0033cc", "#3399ff", "#66ccff"],
+        red: ["#cc0000", "#ff3333", "#ff6666"],
+        green: ["#006600", "#00cc44", "#66ff66"],
+        purple: ["#4B0082", "#8A2BE2", "#DA70D6"],
+        rainbow: ["#ff0000", "#ffa500", "#ffff00", "#00ff00", "#0000ff", "#4b0082", "#ee82ee"]
+      };
+      const list = options[theme] || [theme];
+      return list[Math.floor(Math.random() * list.length)];
     }
 
-    function getPatternDelay(row, col, midRow, midCol) {
-      const baseRandom = Math.random() * 50;
-      switch (activePattern) {
-        case 'top-to-bottom':
-          return row * (60 + Math.random() * 40);
-        case 'left-to-right':
-          return col * (60 + Math.random() * 40);
-        case 'center-out': {
-          const distance = Math.hypot(row - midRow, col - midCol);
-          return distance * (50 + Math.random() * 60);
-        }
-        case 'spiral':
-          return (row + col) * (40 + Math.random() * 30);
-        case 'checkerboard':
-          return ((row + col + Math.floor(Math.random() * 2)) % 2) * (150 + Math.random() * 100);
-        case 'wave':
-          return Math.sin(col / 2 + Math.random()) * 200 + row * (20 + Math.random() * 30);
-        case 'diagonal':
-          return (row + col) * (60 + Math.random() * 30);
-        case 'random':
-          return Math.random() * 500;
-        case 'flash':
-          return 0;
-        default:
-          return baseRandom;
-      }
+    function turnOffGrid() {
+      grid.innerHTML = "";
     }
 
-    function loop() {
-      if (power) applyColors();
-      setTimeout(loop, 2500);
+    function updateDisplay() {
+      const pattern = localStorage.getItem("dancePattern") || "spiral";
+      const color = localStorage.getItem("danceColor") || "blue";
+      const power = localStorage.getItem("dancePower") || "on";
+
+      if (power === "off") {
+        turnOffGrid();
+        return;
+      }
+
+      const cols = Math.floor(window.innerWidth / boxSize);
+      const rows = Math.floor(window.innerHeight / boxSize);
+
+      if (pattern === "spiral") {
+        createGrid(rows, cols, color);
+        // Spiral logic can be improved
+      } else if (pattern === "wave") {
+        createGrid(rows, cols, color);
+      } else if (pattern === "grid") {
+        createGrid(rows, cols, color);
+      } else if (pattern === "random") {
+        createGrid(rows, cols, color);
+      }
     }
-
-    channel.onmessage = ({ data }) => {
-      const { type, value } = data;
-
-      if (type === 'color') {
-        activeColor = value;
-        localStorage.setItem('df_color', value);
-      }
-
-      if (type === 'pattern') {
-        activePattern = value;
-        localStorage.setItem('df_pattern', value);
-      }
-
-      if (type === 'start') {
-        power = true;
-        localStorage.setItem('df_power', 'true');
-      }
-
-      if (type === 'stop') {
-        power = false;
-        localStorage.setItem('df_power', 'false');
-      }
-
-      applyColors();
-    };
-
-    window.addEventListener('resize', () => {
-      createGrid();
-      applyColors();
-    });
 
     window.onload = () => {
-      createGrid();
-      applyColors();
-      loop();
+      updateDisplay();
+      setInterval(updateDisplay, 3000);
     };
+
+    window.addEventListener("resize", updateDisplay);
   </script>
 </body>
 </html>
