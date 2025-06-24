@@ -79,7 +79,7 @@
 
       boxes.forEach(({ element, row, col }, i) => {
         const delay = getPatternDelay(row, col, midRow, midCol);
-        const color = colorList[(i + row + col) % colorList.length];
+        const color = colorList[Math.floor(Math.random() * colorList.length)];
 
         setTimeout(() => {
           element.style.backgroundColor = power ? color : '#000';
@@ -88,17 +88,30 @@
     }
 
     function getPatternDelay(row, col, midRow, midCol) {
+      const baseRandom = Math.random() * 50;
       switch (activePattern) {
-        case 'top-to-bottom': return row * 80;
-        case 'left-to-right': return col * 80;
-        case 'center-out': return Math.hypot(row - midRow, col - midCol) * 70;
-        case 'spiral': return (row + col) * 60;
-        case 'checkerboard': return ((row + col) % 2) * 200;
-        case 'wave': return Math.sin(col / 2) * 300 + row * 40;
-        case 'diagonal': return (row + col) * 75;
-        case 'random': return Math.random() * 500;
-        case 'flash': return 0;
-        default: return 0;
+        case 'top-to-bottom':
+          return row * (60 + Math.random() * 40);
+        case 'left-to-right':
+          return col * (60 + Math.random() * 40);
+        case 'center-out': {
+          const distance = Math.hypot(row - midRow, col - midCol);
+          return distance * (50 + Math.random() * 60);
+        }
+        case 'spiral':
+          return (row + col) * (40 + Math.random() * 30);
+        case 'checkerboard':
+          return ((row + col + Math.floor(Math.random() * 2)) % 2) * (150 + Math.random() * 100);
+        case 'wave':
+          return Math.sin(col / 2 + Math.random()) * 200 + row * (20 + Math.random() * 30);
+        case 'diagonal':
+          return (row + col) * (60 + Math.random() * 30);
+        case 'random':
+          return Math.random() * 500;
+        case 'flash':
+          return 0;
+        default:
+          return baseRandom;
       }
     }
 
