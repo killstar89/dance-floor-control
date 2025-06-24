@@ -47,7 +47,7 @@
 
     <label>
       Color Theme:
-      <select onchange="sendCommand('color', this.value)">
+      <select onchange="updateAndSendCommand('color', this.value)">
         <option value="blue">Blue</option>
         <option value="purple">Purple</option>
         <option value="red">Red</option>
@@ -57,7 +57,7 @@
 
     <label>
       Pattern:
-      <select onchange="sendCommand('pattern', this.value)">
+      <select onchange="updateAndSendCommand('pattern', this.value)">
         <option value="spiral">Spiral</option>
         <option value="wave">Wave</option>
         <option value="center-out">Center-Out</option>
@@ -68,9 +68,24 @@
   <script>
     const channel = new BroadcastChannel("dancefloor-control");
 
+    // Onload, load the saved settings from localStorage
+    window.onload = () => {
+      const savedColor = localStorage.getItem('color') || 'blue';
+      const savedPattern = localStorage.getItem('pattern') || 'spiral';
+
+      document.querySelector('select[name="color"]').value = savedColor;
+      document.querySelector('select[name="pattern"]').value = savedPattern;
+    };
+
     function sendCommand(type, value = null) {
       channel.postMessage({ type, value });
       console.log("Sent command:", type, value);
+    }
+
+    // Save settings in localStorage and send to BroadcastChannel
+    function updateAndSendCommand(type, value) {
+      localStorage.setItem(type, value);
+      sendCommand(type, value);
     }
   </script>
 </body>
