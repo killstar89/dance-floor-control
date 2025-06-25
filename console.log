@@ -1,0 +1,13 @@
+const dbRef = firebase.database().ref('dancefloor/settings');
+
+dbRef.on('value', (snapshot) => {
+  if (snapshot.exists()) {
+    const settings = snapshot.val();
+    console.log('Settings retrieved:', settings);
+    // Update your page with settings
+  } else {
+    console.log('No data found.');
+  }
+}, (error) => {
+  console.error("Error retrieving data:", error);
+});
