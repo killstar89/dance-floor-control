@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dance Floor Viewer</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
-      background-color: black;
+      background: black;
       overflow: hidden;
     }
     #grid {
@@ -20,15 +20,17 @@
     .box {
       width: 100%;
       height: 100%;
-      transition: background-color 1s;
+      transition: background-color 0.5s;
     }
   </style>
 </head>
 <body>
   <div id="grid"></div>
 
+  <!-- Firebase via CDN -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAVC55ieVzrvkGYJArkWXeXAJ8KhdbQF2o",
@@ -43,56 +45,83 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const grid = document.getElementById("grid");
-    const boxSize = 50;
-    let cols = Math.floor(window.innerWidth / boxSize);
-    let rows = Math.floor(window.innerHeight / boxSize);
+    const grid = document.getElementById('grid');
+    let cols = 10, rows = 10;
 
-    grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-    grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+    function createGrid() {
+      grid.innerHTML = '';
+      cols = Math.floor(window.innerWidth / 50);
+      rows = Math.floor(window.innerHeight / 50);
+      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-    const boxes = [];
-    for (let i = 0; i < cols * rows; i++) {
-      const box = document.createElement("div");
-      box.className = "box";
-      grid.appendChild(box);
-      boxes.push(box);
+      for (let i = 0; i < cols * rows; i++) {
+        const box = document.createElement('div');
+        box.className = 'box';
+        grid.appendChild(box);
+      }
     }
 
-    function updateBoxes(color, pattern, power) {
-      if (power === "off") {
-        boxes.forEach(b => b.style.backgroundColor = "black");
+    function applyPattern(pattern, color) {
+      const boxes = document.querySelectorAll('.box');
+      boxes.forEach((box, index) => {
+        let delay = 0;
+        switch (pattern) {
+          case 'spiral':
+            delay = index * 10;
+            break;
+          case 'grid':
+            delay = (index % cols + Math.floor(index / cols)) * 30;
+            break;
+          case 'rain':
+            delay = Math.random() * 1000;
+            break;
+          case 'rings':
+            const x = index % cols - cols / 2;
+            const y = Math.floor(index / cols) - rows / 2;
+            delay = Math.sqrt(x*x + y*y) * 40;
+            break;
+          case 'random':
+            delay = Math.random() * 1000;
+            break;
+          default:
+            delay = 0;
+        }
+        setTimeout(() => {
+          box.style.backgroundColor = color;
+        }, delay);
+      });
+    }
+
+    function clearGrid() {
+      document.querySelectorAll('.box').forEach(box => {
+        box.style.backgroundColor = 'black';
+      });
+    }
+
+    function updateDisplay(data) {
+      if (!data || data.power === 'off') {
+        clearGrid();
         return;
       }
-
-      switch (pattern) {
-        case "spiral":
-        case "rings":
-        case "grid":
-        case "rain":
-        case "breathe":
-        case "random":
-        default:
-          boxes.forEach((b, i) => {
-            const delay = pattern === 'spiral' ? i * 10 : Math.random() * 500;
-            setTimeout(() => {
-              b.style.backgroundColor = pattern === 'random' ? getRandomColor() : color;
-            }, delay);
-          });
-          break;
-      }
+      applyPattern(data.pattern || 'grid', data.color || '#0000ff');
     }
 
-    function getRandomColor() {
-      const colors = ["#ff00ff", "#0000ff", "#00ffff", "#ff0000", "#00ff00", "#ffff00"];
-      return colors[Math.floor(Math.random() * colors.length)];
-    }
+    window.addEventListener('resize', () => {
+      createGrid();
+      // Reapply pattern if settings exist
+      db.ref('dancefloor/settings').once('value', snap => {
+        updateDisplay(snap.val());
+      });
+    });
 
-    db.ref("dancefloor/settings").on("value", (snapshot) => {
+    createGrid();
+
+    // Listen for changes in Firebase
+    db.ref('dancefloor/settings').on('value', snapshot => {
       const data = snapshot.val();
-      if (data) {
-        updateBoxes(data.color, data.pattern, data.power);
-      }
+      console.log('Firebase update:', data);
+      updateDisplay(data);
     });
   </script>
 </body>
