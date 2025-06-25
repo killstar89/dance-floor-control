@@ -8,82 +8,79 @@
     body {
       font-family: sans-serif;
       background: #111;
-      color: white;
+      color: #fff;
       padding: 2rem;
     }
-    select, input[type="color"], button {
-      margin: 0.5rem 0;
-      padding: 0.5rem;
-      font-size: 1rem;
-    }
-    label {
+    label, select, input {
       display: block;
-      margin-top: 1rem;
+      margin: 1rem 0;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h1>Dance Floor Control</h1>
 
+  <label for="color">Color:</label>
+  <input type="color" id="color" />
+
   <label for="pattern">Pattern:</label>
   <select id="pattern">
     <option value="spiral">Spiral</option>
-    <option value="breathe">Breathe</option>
     <option value="grid">Grid</option>
     <option value="rings">Rings</option>
     <option value="rain">Rain</option>
+    <option value="breathe">Breathe</option>
     <option value="random">Random</option>
   </select>
 
-  <label for="color">Color:</label>
-  <input type="color" id="color" value="#0000ff" />
+  <label>
+    <input type="checkbox" id="power" /> Power On
+  </label>
 
-  <label for="power">Power:</label>
-  <select id="power">
-    <option value="on">On</option>
-    <option value="off">Off</option>
-  </select>
+  <button onclick="saveSettings()">Save Settings</button>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
   <script>
     const firebaseConfig = {
-  	apiKey: "AIzaSyAVC55ieVzrvkGYJArkWXeXAJ8KhdbQF2o",
-  	authDomain: "dancefloorcontrol-473de.firebaseapp.com",
-  	databaseURL: "https://dancefloorcontrol-473de-default-rtdb.firebaseio.com",
-  	projectId: "dancefloorcontrol-473de",
-  	storageBucket: "dancefloorcontrol-473de.firebasestorage.app",
-  	messagingSenderId: "340793387071",
-  	appId: "1:340793387071:web:ab3fd040eda7a8cd3d708a"
+      apiKey: "AIzaSyAVC55ieVzrvkGYJArkWXeXAJ8KhdbQF2o",
+      authDomain: "dancefloorcontrol-473de.firebaseapp.com",
+      databaseURL: "https://dancefloorcontrol-473de-default-rtdb.firebaseio.com",
+      projectId: "dancefloorcontrol-473de",
+      storageBucket: "dancefloorcontrol-473de.appspot.com",
+      messagingSenderId: "340793387071",
+      appId: "1:340793387071:web:ab3fd040eda7a8cd3d708a"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const patternSelect = document.getElementById("pattern");
     const colorInput = document.getElementById("color");
-    const powerSelect = document.getElementById("power");
+    const patternSelect = document.getElementById("pattern");
+    const powerCheckbox = document.getElementById("power");
 
-    function updateSettings() {
-      db.ref("dancefloor/settings").set({
-        pattern: patternSelect.value,
-        color: colorInput.value,
-        power: powerSelect.value
-      });
+    function saveSettings() {
+      const color = colorInput.value;
+      const pattern = patternSelect.value;
+      const power = powerCheckbox.checked ? "on" : "off";
+      db.ref("dancefloor/settings").set({ color, pattern, power });
     }
 
-    patternSelect.addEventListener("change", updateSettings);
-    colorInput.addEventListener("input", updateSettings);
-    powerSelect.addEventListener("change", updateSettings);
-
-    // Load saved settings from Firebase
+    // Load current settings on page load
     db.ref("dancefloor/settings").on("value", (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        patternSelect.value = data.pattern || "spiral";
         colorInput.value = data.color || "#0000ff";
-        powerSelect.value = data.power || "on";
+        patternSelect.value = data.pattern || "spiral";
+        powerCheckbox.checked = data.power === "on";
       }
     });
   </script>
