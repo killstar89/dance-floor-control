@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dance Floor Control</title>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js"></script>
+  
+</head>
+<body>
+  <h1>Welcome to the Dance Floor Control</h1>
+
+  <script>
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAVC55ieVzrvkGYJArkWXeXAJ8KhdbQF2o",
+      authDomain: "dancefloorcontrol-473de.firebaseapp.com",
+      projectId: "dancefloorcontrol-473de",
+      storageBucket: "dancefloorcontrol-473de.firebasestorage.app",
+      messagingSenderId: "340793387071",
+      appId: "1:340793387071:web:0e83a21adfdb11d93d708a"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database(app);
+
+    console.log("Firebase initialized", app);
+  </script>
+</body>
+</html>
