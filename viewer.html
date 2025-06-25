@@ -32,15 +32,19 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAVC55ieVzrvkGYJArkWXeXAJ8KhdbQF2o",
-      authDomain: "dancefloorcontrol-473de.firebaseapp.com",
-      databaseURL: "https://dancefloorcontrol-473de-default-rtdb.firebaseio.com",
-      projectId: "dancefloorcontrol-473de",
-      storageBucket: "dancefloorcontrol-473de.firebasestorage.app",
-      messagingSenderId: "340793387071",
-      appId: "1:340793387071:web:ab3fd040eda7a8cd3d708a"
-    };
+   const firebaseConfig = {
+  apiKey: "AIzaSyAVC55ieVzrvkGYJArkWXeXAJ8KhdbQF2o",
+  authDomain: "dancefloorcontrol-473de.firebaseapp.com",
+  databaseURL: "https://dancefloorcontrol-473de-default-rtdb.firebaseio.com/",
+  projectId: "dancefloorcontrol-473de",
+  storageBucket: "dancefloorcontrol-473de.firebasestorage.app",
+  messagingSenderId: "340793387071",
+  appId: "1:340793387071:web:ab3fd040eda7a8cd3d708a"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
