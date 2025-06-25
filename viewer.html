@@ -1,4 +1,3 @@
-<!-- viewer.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,104 +5,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dance Floor Viewer</title>
   <style>
-    html, body { margin: 0; padding: 0; height: 100%; background: black; overflow: hidden; }
-    #grid { display: grid; width: 100vw; height: 100vh; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: black;
+      overflow: hidden;
+    }
+    #grid {
+      display: grid;
+      width: 100vw;
+      height: 100vh;
+    }
     .box {
       width: 100%;
       height: 100%;
-      border: 1px solid #111;
-      animation: pulse 4s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); filter: brightness(1); }
-      50% { transform: scale(1.1); filter: brightness(1.5); }
+      transition: background-color 1s;
     }
   </style>
 </head>
 <body>
   <div id="grid"></div>
 
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAVC55ieVzrvkGYJArkWXeXAJ8KhdbQF2o",
+      authDomain: "dancefloorcontrol-473de.firebaseapp.com",
+      databaseURL: "https://dancefloorcontrol-473de-default-rtdb.firebaseio.com",
+      projectId: "dancefloorcontrol-473de",
+      storageBucket: "dancefloorcontrol-473de.firebasestorage.app",
+      messagingSenderId: "340793387071",
+      appId: "1:340793387071:web:ab3fd040eda7a8cd3d708a"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     const grid = document.getElementById("grid");
     const boxSize = 50;
+    let cols = Math.floor(window.innerWidth / boxSize);
+    let rows = Math.floor(window.innerHeight / boxSize);
 
-    function createGrid(rows, cols, color) {
-      grid.innerHTML = "";
-      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-      grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+    grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const box = document.createElement("div");
-          box.className = "box";
-          box.style.backgroundColor = getColor(color);
-          grid.appendChild(box);
-        }
+    const boxes = [];
+    for (let i = 0; i < cols * rows; i++) {
+      const box = document.createElement("div");
+      box.className = "box";
+      grid.appendChild(box);
+      boxes.push(box);
+    }
+
+    function updateBoxes(color, pattern, power) {
+      if (power === "off") {
+        boxes.forEach(b => b.style.backgroundColor = "black");
+        return;
+      }
+
+      switch (pattern) {
+        case "spiral":
+        case "rings":
+        case "grid":
+        case "rain":
+        case "breathe":
+        case "random":
+        default:
+          boxes.forEach((b, i) => {
+            const delay = pattern === 'spiral' ? i * 10 : Math.random() * 500;
+            setTimeout(() => {
+              b.style.backgroundColor = pattern === 'random' ? getRandomColor() : color;
+            }, delay);
+          });
+          break;
       }
     }
 
-    function getColor(theme) {
-      const options = {
-        blue: ["#0033cc", "#3399ff", "#66ccff"],
-        red: ["#cc0000", "#ff3333", "#ff6666"],
-        green: ["#006600", "#00cc44", "#66ff66"],
-        purple: ["#4B0082", "#8A2BE2", "#DA70D6"],
-        rainbow: ["#ff0000", "#ffa500", "#ffff00", "#00ff00", "#0000ff", "#4b0082", "#ee82ee"]
-      };
-      const list = options[theme] || [theme];
-      return list[Math.floor(Math.random() * list.length)];
+    function getRandomColor() {
+      const colors = ["#ff00ff", "#0000ff", "#00ffff", "#ff0000", "#00ff00", "#ffff00"];
+      return colors[Math.floor(Math.random() * colors.length)];
     }
 
-    function turnOffGrid() {
-      grid.innerHTML = "";
-    }
-
-    let lastPattern = "";
-    let lastColor = "";
-    let lastPower = "";
-
-    function updateDisplay() {
-      const pattern = localStorage.getItem("dancePattern") || "spiral";
-      const color = localStorage.getItem("danceColor") || "blue";
-      const power = localStorage.getItem("dancePower") || "on";
-
-      if (pattern !== lastPattern || color !== lastColor || power !== lastPower) {
-        lastPattern = pattern;
-        lastColor = color;
-        lastPower = power;
-
-        if (power === "off") {
-          turnOffGrid();
-          return;
-        }
-
-        const cols = Math.floor(window.innerWidth / boxSize);
-        const rows = Math.floor(window.innerHeight / boxSize);
-
-        if (pattern === "spiral" || pattern === "wave" || pattern === "grid" || pattern === "random") {
-          createGrid(rows, cols, color);
-        }
+    db.ref("dancefloor/settings").on("value", (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        updateBoxes(data.color, data.pattern, data.power);
       }
-    }
-
-    window.onload = () => {
-      updateDisplay();
-      setInterval(updateDisplay, 1000);
-    };
-const firebaseConfig = {
-  apiKey: "AIzaSyAVC55ieVzrvkGYJArkWXeXAJ8KhdbQF2o",
-  authDomain: "dancefloorcontrol-473de.firebaseapp.com",
-  databaseURL: "https://dancefloorcontrol-473de-default-rtdb.firebaseio.com",
-  projectId: "dancefloorcontrol-473de",
-  storageBucket: "dancefloorcontrol-473de.firebasestorage.app",
-  messagingSenderId: "340793387071",
-  appId: "1:340793387071:web:ab3fd040eda7a8cd3d708a"
-};
-  // ✅ Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-</script>
-    window.addEventListener("resize", updateDisplay);
+    });
   </script>
 </body>
 </html>
