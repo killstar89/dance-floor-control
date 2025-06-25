@@ -2,53 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dance Floor Control</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #111;
-      color: #fff;
-      padding: 2rem;
+      font-family: Arial, sans-serif;
+      background-color: #222;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
     }
-    label, select, input {
-      display: block;
-      margin: 1rem 0;
-    }
-    button {
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      background: #222;
-      color: #fff;
-      border: 1px solid #444;
+    button, select {
+      padding: 10px;
+      font-size: 16px;
       cursor: pointer;
+    }
+    select {
+      margin-top: 10px;
+    }
+    .onoff {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
+
   <h1>Dance Floor Control</h1>
 
-  <label for="color">Color:</label>
-  <input type="color" id="color" />
+  <label for="color">Choose Color:</label>
+  <select id="color">
+    <option value="#ff0000">Red</option>
+    <option value="#00ff00">Green</option>
+    <option value="#0000ff">Blue</option>
+    <option value="#ffff00">Yellow</option>
+    <option value="#ff00ff">Magenta</option>
+    <option value="#00ffff">Cyan</option>
+  </select>
 
-  <label for="pattern">Pattern:</label>
+  <label for="pattern">Choose Pattern:</label>
   <select id="pattern">
     <option value="spiral">Spiral</option>
     <option value="grid">Grid</option>
-    <option value="rings">Rings</option>
     <option value="rain">Rain</option>
-    <option value="breathe">Breathe</option>
+    <option value="rings">Rings</option>
     <option value="random">Random</option>
   </select>
 
-  <label>
-    <input type="checkbox" id="power" /> Power On
-  </label>
+  <div class="onoff">
+    <label for="power">Power:</label>
+    <select id="power">
+      <option value="on">ON</option>
+      <option value="off">OFF</option>
+    </select>
+  </div>
 
-  <button onclick="saveSettings()">Save Settings</button>
+  <button id="saveButton">Save Settings</button>
 
+  <!-- Firebase CDN -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAVC55ieVzrvkGYJArkWXeXAJ8KhdbQF2o",
@@ -60,29 +76,26 @@
       appId: "1:340793387071:web:ab3fd040eda7a8cd3d708a"
     };
 
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const colorInput = document.getElementById("color");
-    const patternSelect = document.getElementById("pattern");
-    const powerCheckbox = document.getElementById("power");
-
+    // Function to save settings to Firebase
     function saveSettings() {
-      const color = colorInput.value;
-      const pattern = patternSelect.value;
-      const power = powerCheckbox.checked ? "on" : "off";
-      db.ref("dancefloor/settings").set({ color, pattern, power });
+      const color = document.getElementById('color').value;
+      const pattern = document.getElementById('pattern').value;
+      const power = document.getElementById('power').value;
+
+      db.ref('dancefloor/settings').set({
+        color: color,
+        pattern: pattern,
+        power: power
+      });
     }
 
-    // Load current settings on page load
-    db.ref("dancefloor/settings").on("value", (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        colorInput.value = data.color || "#0000ff";
-        patternSelect.value = data.pattern || "spiral";
-        powerCheckbox.checked = data.power === "on";
-      }
-    });
+    // Listen for the save button click
+    document.getElementById('saveButton').addEventListener('click', saveSettings);
+
   </script>
 </body>
 </html>
