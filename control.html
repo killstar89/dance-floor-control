@@ -1,4 +1,3 @@
-<!-- control.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,70 +5,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dance Floor Control</title>
   <style>
-    body { font-family: sans-serif; background: #111; color: white; padding: 1em; }
-    select, button, label { margin: 0.5em 0; display: block; }
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: white;
+      padding: 2rem;
+    }
+    select, input[type="color"], button {
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
-  <h2>Dance Floor Control</h2>
+  <h1>Dance Floor Control</h1>
 
-  <label>Pattern:
-    <select id="patternSelect">
-      <option value="spiral">Spiral</option>
-      <option value="wave">Wave</option>
-      <option value="grid">Grid</option>
-      <option value="random">Random</option>
-    </select>
-  </label>
+  <label for="pattern">Pattern:</label>
+  <select id="pattern">
+    <option value="spiral">Spiral</option>
+    <option value="breathe">Breathe</option>
+    <option value="grid">Grid</option>
+    <option value="rings">Rings</option>
+    <option value="rain">Rain</option>
+    <option value="random">Random</option>
+  </select>
 
-  <label>Color:
-    <select id="colorSelect">
-      <option value="blue">Blue</option>
-      <option value="purple">Purple</option>
-      <option value="red">Red</option>
-      <option value="green">Green</option>
-      <option value="rainbow">Rainbow</option>
-    </select>
-  </label>
+  <label for="color">Color:</label>
+  <input type="color" id="color" value="#0000ff" />
 
-  <label>
-    <input type="checkbox" id="powerToggle" checked /> Power On/Off
-  </label>
+  <label for="power">Power:</label>
+  <select id="power">
+    <option value="on">On</option>
+    <option value="off">Off</option>
+  </select>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
-    const patternSelect = document.getElementById("patternSelect");
-    const colorSelect = document.getElementById("colorSelect");
-    const powerToggle = document.getElementById("powerToggle");
+    const firebaseConfig = {
+  	apiKey: "AIzaSyAVC55ieVzrvkGYJArkWXeXAJ8KhdbQF2o",
+  	authDomain: "dancefloorcontrol-473de.firebaseapp.com",
+  	databaseURL: "https://dancefloorcontrol-473de-default-rtdb.firebaseio.com",
+  	projectId: "dancefloorcontrol-473de",
+  	storageBucket: "dancefloorcontrol-473de.firebasestorage.app",
+  	messagingSenderId: "340793387071",
+  	appId: "1:340793387071:web:ab3fd040eda7a8cd3d708a"
+    };
 
-    function saveSettings() {
-      localStorage.setItem("dancePattern", patternSelect.value);
-      localStorage.setItem("danceColor", colorSelect.value);
-      localStorage.setItem("dancePower", powerToggle.checked ? "on" : "off");
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const patternSelect = document.getElementById("pattern");
+    const colorInput = document.getElementById("color");
+    const powerSelect = document.getElementById("power");
+
+    function updateSettings() {
+      db.ref("dancefloor/settings").set({
+        pattern: patternSelect.value,
+        color: colorInput.value,
+        power: powerSelect.value
+      });
     }
 
-    patternSelect.addEventListener("change", saveSettings);
-    colorSelect.addEventListener("change", saveSettings);
-    powerToggle.addEventListener("change", saveSettings);
+    patternSelect.addEventListener("change", updateSettings);
+    colorInput.addEventListener("input", updateSettings);
+    powerSelect.addEventListener("change", updateSettings);
 
-    window.onload = () => {
-      patternSelect.value = localStorage.getItem("dancePattern") || "spiral";
-      colorSelect.value = localStorage.getItem("danceColor") || "blue";
-      powerToggle.checked = localStorage.getItem("dancePower") !== "off";
-    };
-    const firebaseConfig = {
-  apiKey: "AIzaSyAVC55ieVzrvkGYJArkWXeXAJ8KhdbQF2o",
-  authDomain: "dancefloorcontrol-473de.firebaseapp.com",
-  databaseURL: "https://dancefloorcontrol-473de-default-rtdb.firebaseio.com",
-  projectId: "dancefloorcontrol-473de",
-  storageBucket: "dancefloorcontrol-473de.firebasestorage.app",
-  messagingSenderId: "340793387071",
-  appId: "1:340793387071:web:ab3fd040eda7a8cd3d708a"
-};
-
-      // ✅ Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-</script>
+    // Load saved settings from Firebase
+    db.ref("dancefloor/settings").on("value", (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        patternSelect.value = data.pattern || "spiral";
+        colorInput.value = data.color || "#0000ff";
+        powerSelect.value = data.power || "on";
+      }
+    });
   </script>
 </body>
 </html>
